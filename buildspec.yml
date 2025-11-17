@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Installing dependencies..."
+      - pip install -r backend/requirements.txt
+      - cd frontend && npm ci && npm run build
+      
+  build:
+    commands:
+      - echo "Building backend..."
+      - echo "Building Docker image for backend..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/ai-resume-backend
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG -f backend/Dockerfile backend/
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo "Writing image definitions file..."
+      - printf '[{"name":"ai-resume-backend","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      
+  post_build:
+    commands:
+      - echo "Deployment complete"
+
+artifacts:
+  files:
+    - imagedefinitions.json
+    - frontend/dist/**/*

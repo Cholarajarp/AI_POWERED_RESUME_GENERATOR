@@ -1,0 +1,34 @@
+runtime: python311
+entrypoint: uvicorn app.main:app --host 0.0.0.0 --port 8080
+
+env:
+  - key: PYTHONUNBUFFERED
+    value: 1
+
+services:
+  - type: web
+    name: api
+    runtime: python311
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 8080
+    envVars:
+      - key: DATABASE_URL
+        value: ${DATABASE_URL}
+      - key: SECRET_KEY
+        value: ${SECRET_KEY}
+      - key: OPENAI_API_KEY
+        value: ${OPENAI_API_KEY}
+      - key: STRIPE_API_KEY
+        value: ${STRIPE_API_KEY}
+      - key: STRIPE_WEBHOOK_SECRET
+        value: ${STRIPE_WEBHOOK_SECRET}
+      - key: GITHUB_CLIENT_ID
+        value: ${GITHUB_CLIENT_ID}
+      - key: GITHUB_CLIENT_SECRET
+        value: ${GITHUB_CLIENT_SECRET}
+      - key: REDIS_URL
+        value: ${REDIS_URL}
+      - key: MINIO_ENDPOINT
+        value: ${MINIO_ENDPOINT}
+      - key: FRONTEND_URL
+        value: ${FRONTEND_URL}

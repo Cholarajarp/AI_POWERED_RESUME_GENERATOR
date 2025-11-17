@@ -59,7 +59,8 @@ export const authAPI = {
   register: (data: any) => api.post('/auth/register', data),
   login: (data: any) => api.post('/auth/login', data),
   logout: () => api.post('/auth/logout'),
-  googleLogin: (token: string) => api.post('/auth/google', { token }),
+  googleLogin: (token: string) => api.post('/auth/google/callback', { token }),
+  githubCallback: (code: string) => api.post('/auth/github/callback', { code }),
 };
 
 export const resumeAPI = {
@@ -93,6 +94,12 @@ export const interviewAPI = {
 export const jobAPI = {
   parse: (description: string) => api.post('/job/parse', { description }),
   match: (resumeId: string) => api.post('/job/match', { resume_id: resumeId }),
+};
+
+export const templatesAPI = {
+  list: (category?: string) => api.get('/templates', { params: { category } }),
+  get: (templateId: number) => api.get(`/templates/${templateId}`),
+  generate: (data: any) => api.post('/templates/generate', data),
 };
 
 export default api;

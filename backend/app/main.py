@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
-from .api import auth, health, user, resume, job, ats, interview, payments, admin
+from .api import auth, health, user, resume, job, ats, interview, payments, admin, templates
 from .core.logging import setup_logging
 
 setup_logging()
@@ -24,6 +24,7 @@ app.include_router(job.router, prefix="/job", tags=["job"])
 app.include_router(ats.router, prefix="/ats", tags=["ats"])
 app.include_router(interview.router, prefix="/interview", tags=["interview"])
 app.include_router(payments.router, prefix="/payments", tags=["payments"])
+app.include_router(templates.router, prefix="/templates", tags=["templates"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 @app.on_event("startup")

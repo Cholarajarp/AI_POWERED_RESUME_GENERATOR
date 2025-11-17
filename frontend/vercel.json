@@ -1,0 +1,20 @@
+# Vercel deployment for frontend
+
+[build]
+command = "npm run build"
+output = "dist"
+functions = "api"
+
+[env]
+VITE_API_URL = "https://your-api.onrender.com"
+VITE_GITHUB_CLIENT_ID = "$GITHUB_CLIENT_ID"
+VITE_GOOGLE_CLIENT_ID = "$GOOGLE_CLIENT_ID"
+
+[[redirects]]
+source = "/(.*)"
+destination = "/index.html"
+status = 200
+
+[[headers]]
+path = "/api/*"
+headers = { Cache-Control = "max-age=0, no-cache, no-store, must-revalidate" }

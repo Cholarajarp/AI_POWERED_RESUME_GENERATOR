@@ -1,0 +1,16 @@
+[build]
+command = "npm install && npm run build"
+functions = "netlify/functions"
+publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+  REACT_APP_API_URL = "https://your-api.onrender.com"
+  VITE_API_URL = "https://your-api.onrender.com"
+  VITE_GITHUB_CLIENT_ID = "$GITHUB_CLIENT_ID"
+  VITE_GOOGLE_CLIENT_ID = "$GOOGLE_CLIENT_ID"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

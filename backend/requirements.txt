@@ -15,10 +15,16 @@ celery[redis]==5.3.1
 redis==4.6.0
 minio==7.1.14
 stripe==5.0.0
+google-auth==2.25.2
+google-auth-httplib2==0.2.0
+python-github==2.1.1
+authlib==1.2.1
 pytest==7.4.0
 pytest-asyncio==0.22.0
 python-dotenv==1.0.0
 structlog==23.1.0
 ratelimit==2.2.1
 aiofiles==23.1.0
+reportlab==4.0.7
+PyPDF2==3.0.1
 
