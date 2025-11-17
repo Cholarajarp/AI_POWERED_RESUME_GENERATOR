@@ -15,8 +15,8 @@ minio==7.1.14
 stripe==5.0.0
 pytest==7.4.0
 pytest-asyncio==0.22.0
-httpx==0.24.1
 python-dotenv==1.0.0
 structlog==23.1.0
 ratelimit==2.2.1
 aiofiles==23.1.0
+
