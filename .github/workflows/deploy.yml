@@ -1,0 +1,18 @@
+name: Build and Push
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: |
+          docker build -t resume-agent-backend ./backend
+      - name: Build frontend image
+        run: |
+          docker build -t resume-agent-frontend ./frontend
+      # TODO: add registry login and push steps

@@ -1,0 +1,35 @@
+name: CI Tests
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: resume_agent_db
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install backend deps
+        run: |
+          cd backend
+          pip install -r requirements.txt
+      - name: Run backend tests
+        run: |
+          cd backend
+          pytest -q
+      - name: Frontend tests
+        run: |
+          cd frontend
+          npm ci
+          npm test
