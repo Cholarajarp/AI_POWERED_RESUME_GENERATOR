@@ -8,46 +8,224 @@ A production-ready SaaS platform to help users optimize resumes for ATS, analyze
 - Database: PostgreSQL
 - Cache/Queue: Redis + Celery
 - Storage: MinIO (S3-compatible)
-- Auth: JWT + OAuth2 (Google)
+- Auth: JWT + OAuth2 (Google/GitHub)
 - Payments: Stripe
 - CI/CD: GitHub Actions
 - Deployment: Docker + docker-compose
 
 ---
 
-## Quick Start (Development)
+## 🎯 Key Features
+
+### Core Features
+- ✅ **Resume Optimization**: AI-powered ATS keyword matching & formatting
+- ✅ **Job Analysis**: Parse job descriptions and match with resume
+- ✅ **Mock Interviews**: AI interviewer with voice feedback
+- ✅ **Template System**: Cover letters, LinkedIn profiles, ATS templates
+- ✅ **PDF Export**: Premium resume templates with custom styling
+
+### Advanced Features
+- ✅ **OAuth Login**: Google & GitHub authentication
+- ✅ **Subscription Plans**: Stripe billing with 3 tiers (Basic/Pro/Enterprise)
+- ✅ **Admin Dashboard**: Real-time analytics & user management
+- ✅ **Celery Tasks**: Async resume processing and email notifications
+
+---
+
+## 🚀 Quick Start (Development)
 
 ### Prerequisites
-- **Docker Desktop** (Windows/Mac) or Docker Engine (Linux) with Docker Compose V2
+- **Docker Desktop** (Windows/Mac) or Docker Engine (Linux) with Docker Compose
   - Download: https://www.docker.com/get-started
 - **Git**
 
-### Start the Full Stack
+### Start in 3 Steps
 
-1. Clone and navigate to the repo:
-```powershell
-cd C:\Users\YourUser\Downloads\AI_POWERED_RESUME_GENERATOR
+1. **Clone and create .env**:
+```bash
+cd AI_POWERED_RESUME_GENERATOR
+cp .env.example .env
+# Edit .env with your secrets (OPENAI_API_KEY, STRIPE_API_KEY, etc.)
 ```
 
-2. Run the automated start script (PowerShell):
-```powershell
-.\scripts\start-dev.ps1
-```
-
-   Or manually:
-```powershell
-# Create .env if missing
-Copy-Item .env.example .env
-
-# Start services (Docker Compose V2)
+2. **Start all services**:
+```bash
 docker compose up --build -d
-
-# Or if using legacy docker-compose
-docker-compose up --build -d
-
-# Create admin user
-docker compose exec backend python scripts/create_admin.py --email admin@example.com --password secret
 ```
+
+3. **Access the app**:
+- 🌐 Frontend: http://localhost:3000
+- 📡 API: http://localhost:8000/docs
+- 📦 MinIO: http://localhost:9001
+
+**Full guide**: See [QUICKSTART.md](docs/QUICKSTART.md)
+
+---
+
+## 📋 Project Structure
+
+```
+AI_POWERED_RESUME_GENERATOR/
+├── backend/
+│   ├── app/
+│   │   ├── api/              # Route handlers (auth, resume, payments, etc.)
+│   │   ├── core/             # Config, security, logging
+│   │   ├── db/               # Database models & CRUD
+│   │   ├── ai/               # OpenAI & LLM integrations
+│   │   ├── utils/            # Helper functions
+│   │   └── main.py           # FastAPI app entry point
+│   ├── alembic/              # Database migrations
+│   ├── scripts/              # Admin scripts, startup
+│   ├── Dockerfile            # Backend container
+│   └── requirements.txt       # Python dependencies
+├── frontend/
+│   ├── src/
+│   │   ├── pages/            # React pages (Login, Dashboard, etc.)
+│   │   ├── components/       # Reusable components
+│   │   ├── services/         # API client & utilities
+│   │   └── App.tsx           # Main React app
+│   ├── Dockerfile            # Frontend container
+│   └── package.json          # NPM dependencies
+├── deploy/
+│   └── DEPLOYMENT.md         # Render/Vercel/AWS guides
+├── docs/
+│   ├── QUICKSTART.md         # 3-step setup guide
+│   └── API.md                # API documentation
+├── scripts/
+│   ├── start-dev.ps1         # Windows startup script
+│   └── health-check.sh       # System diagnostics
+└── docker-compose.yml        # Multi-service orchestration
+```
+
+---
+
+## 🛠️ Technical Challenges Solved
+
+### 1. **Async SQLAlchemy + Alembic**
+- Configured SQLAlchemy for async operations with asyncpg
+- Auto-run Alembic migrations on container startup
+- Proper session management in async context
+
+### 2. **MinIO S3-Compatible Storage**
+- MinIO bucket auto-creation on app startup
+- Async file upload/download handlers
+- Resume storage with expiring pre-signed URLs
+
+### 3. **OAuth2 + JWT Multi-Provider Auth**
+- Google & GitHub OAuth flows
+- Token refresh mechanism with automatic re-authentication
+- Secure credential storage without storing passwords
+
+### 4. **Real-time OpenAI Integration**
+- Streaming responses for interview feedback
+- Prompt engineering for resume analysis
+- Token usage tracking for billing
+
+### 5. **Stripe Subscription Billing**
+- Full payment flow with webhooks
+- Plan tier management (Basic/Pro/Enterprise)
+- Subscription upgrade/downgrade/cancel
+- Webhook signature verification for security
+
+### 6. **Docker Multi-Service Orchestration**
+- Service health checks with proper startup ordering
+- Auto-migration & bucket creation on backend startup
+- Celery worker for async tasks
+- Volume management for persistent data
+
+---
+
+## 📖 Documentation
+
+- **[QUICKSTART.md](docs/QUICKSTART.md)** - Get running in 3 steps
+- **[DEPLOYMENT.md](deploy/DEPLOYMENT.md)** - Deploy to Render, Vercel, AWS
+- **[API Docs](http://localhost:8000/docs)** - Swagger interactive API
+- **[Architecture](docs/ARCHITECTURE.md)** - System design details
+
+---
+
+## 🔐 Environment Variables
+
+Required (copy from `.env.example`):
+```env
+DATABASE_URL=postgresql+asyncpg://...
+OPENAI_API_KEY=sk-...
+STRIPE_API_KEY=sk_live_...
+MINIO_ROOT_USER=miniouser
+MINIO_ROOT_PASSWORD=miniosecret
+```
+
+Optional:
+```env
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
+GOOGLE_OAUTH_CLIENT_ID=...
+GOOGLE_OAUTH_CLIENT_SECRET=...
+```
+
+---
+
+## 🧪 Testing & Validation
+
+```bash
+# Run backend tests
+docker compose exec backend pytest
+
+# Run frontend tests
+docker compose exec frontend npm test
+
+# Health check
+./scripts/health-check.sh
+
+# View logs
+docker compose logs -f backend
+docker compose logs -f frontend
+```
+
+---
+
+## 🚢 Deployment
+
+### Quick Deploy Links
+- **Render** (Backend): See [DEPLOYMENT.md](deploy/DEPLOYMENT.md#deploy-backend-to-render)
+- **Vercel** (Frontend): See [DEPLOYMENT.md](deploy/DEPLOYMENT.md#deploy-frontend-to-vercel)
+- **AWS** (Full Stack): See [DEPLOYMENT.md](deploy/DEPLOYMENT.md#deploy-to-aws)
+
+### Production Checklist
+- [ ] Set strong `SECRET_KEY` in production
+- [ ] Update `FRONTEND_URL` to production domain
+- [ ] Configure OAuth client IDs/secrets
+- [ ] Set Stripe production keys
+- [ ] Enable HTTPS/SSL everywhere
+- [ ] Set up database backups
+- [ ] Configure email notifications
+- [ ] Enable monitoring & logging (Sentry)
+
+---
+
+## 🤝 Contributing
+
+1. Create a feature branch: `git checkout -b feature/my-feature`
+2. Commit changes: `git commit -m "feat: add feature"`
+3. Push and create a Pull Request
+
+---
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE) file
+
+---
+
+## 📬 Support & Contact
+
+- 📧 Email: contact@airesume.dev
+- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/ai-resume-agent/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/yourusername/ai-resume-agent/discussions)
+
+---
+
+**Built with ❤️ for job seekers everywhere.**
 
 3. Access services:
 - **Backend API**: http://localhost:8000
