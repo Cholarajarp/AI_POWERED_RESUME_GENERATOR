@@ -3,17 +3,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
 from .api import auth, health, user, resume, job, ats, interview, payments, admin, templates
 from .core.logging import setup_logging
+import logging
+import os
 
 setup_logging()
+logger = logging.getLogger(__name__)
 
-app = FastAPI(title="AI Interview & Resume Agent")
+app = FastAPI(
+    title="AI Interview & Resume Agent",
+    description="AI-powered resume and interview preparation platform",
+    version="1.0.0"
+)
 
+# Configure CORS with proper origin handling
+cors_origins = settings.FRONTEND_ORIGINS if settings.ENVIRONMENT == "development" else [settings.FRONTEND_URL]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    max_age=600,
 )
 
 app.include_router(health.router, prefix="/health", tags=["health"])
@@ -29,5 +39,29 @@ app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 @app.on_event("startup")
 async def startup():
-    # TODO: connect to DB, init pools
-    pass
+    """Initialize app on startup: DB pools, MinIO bucket, etc."""
+    logger.info("Starting up AI Resume Agent...")
+    
+    # Initialize MinIO bucket if needed
+    try:
+        from minio import Minio
+        minio_client = Minio(
+            settings.MINIO_ENDPOINT,
+            access_key=settings.MINIO_ACCESS_KEY,
+            secret_key=settings.MINIO_SECRET_KEY,
+            secure=False
+        )
+        if not minio_client.bucket_exists(settings.MINIO_BUCKET):
+            minio_client.make_bucket(settings.MINIO_BUCKET)
+            logger.info(f"Created MinIO bucket: {settings.MINIO_BUCKET}")
+        else:
+            logger.info(f"MinIO bucket exists: {settings.MINIO_BUCKET}")
+    except Exception as e:
+        logger.warning(f"MinIO initialization warning: {e}")
+    
+    logger.info("Startup complete")
+
+@app.on_event("shutdown")
+async def shutdown():
+    """Clean up on shutdown."""
+    logger.info("Shutting down AI Resume Agent...")

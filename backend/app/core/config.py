@@ -1,10 +1,14 @@
 import os
-from pydantic import BaseSettings
+import sys
+from pydantic import BaseSettings, validator
 from typing import List
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@db:5432/resume_agent_db")
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "changeme")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "changeme-dev-only")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
     REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 
@@ -17,12 +21,15 @@ class Settings(BaseSettings):
     MINIO_ENDPOINT: str = os.getenv("MINIO_ENDPOINT", "minio:9000")
     MINIO_ACCESS_KEY: str = os.getenv("MINIO_ACCESS_KEY", "miniouser")
     MINIO_SECRET_KEY: str = os.getenv("MINIO_SECRET_KEY", "miniosecret")
-    MINIO_BUCKET: str = os.getenv("MINIO_BUCKET", "uploads")
+    MINIO_BUCKET: str = os.getenv("MINIO_BUCKET", "resumes")
 
     CELERY_BROKER: str = os.getenv("CELERY_BROKER", "redis://redis:6379/0")
     CELERY_BACKEND: str = os.getenv("CELERY_BACKEND", "redis://redis:6379/1")
 
     DEBUG: bool = os.getenv("DEBUG", "true").lower() == "true"
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    
+    FRONTEND_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000"]
     CORS_ORIGINS: List[str] = ["*"]
 
     GOOGLE_OAUTH_CLIENT_ID: str = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
@@ -33,4 +40,26 @@ class Settings(BaseSettings):
     
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
-settings = Settings()
+    @validator('DATABASE_URL')
+    def validate_database_url(cls, v):
+        if not v:
+            raise ValueError('DATABASE_URL is required')
+        if not v.startswith(('postgresql://', 'postgresql+asyncpg://', 'sqlite://')):
+            raise ValueError('DATABASE_URL must be a valid PostgreSQL or SQLite URL')
+        return v
+
+    class Config:
+        env_file = ".env"
+        case_sensitive = True
+
+try:
+    settings = Settings()
+    logger.info(f"Settings loaded successfully (environment: {settings.ENVIRONMENT})")
+except Exception as e:
+    logger.error(f"Failed to load settings: {e}")
+    print(f"\n❌ Configuration Error: {e}")
+    print("\nMake sure you have a .env file with required variables:")
+    print("  - DATABASE_URL")
+    print("  - OPENAI_API_KEY (optional for dev)")
+    print("  - STRIPE_API_KEY (optional for dev)")
+    sys.exit(1)
