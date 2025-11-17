@@ -9,10 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
       - name: Build backend image
         run: |
           docker build -t resume-agent-backend ./backend
       - name: Build frontend image
         run: |
           docker build -t resume-agent-frontend ./frontend
-      # TODO: add registry login and push steps 
+      # TODO: add registry login and push steps (e.g. docker/login-action) and push images to your registry
