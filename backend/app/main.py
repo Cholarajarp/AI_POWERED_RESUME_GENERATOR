@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
+from .core.minio_utils import ensure_buckets
 from .api import auth, health, user, resume, job, ats, interview, payments, admin, templates
 from .core.logging import setup_logging
 import logging
-import os
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -40,28 +40,24 @@ app.include_router(admin.router, prefix="/admin", tags=["admin"])
 @app.on_event("startup")
 async def startup():
     """Initialize app on startup: DB pools, MinIO bucket, etc."""
-    logger.info("Starting up AI Resume Agent...")
+    logger.info("="*70)
+    logger.info("🚀 Starting up AI Resume Agent...")
+    logger.info("="*70)
     
     # Initialize MinIO bucket if needed
     try:
-        from minio import Minio
-        minio_client = Minio(
-            settings.MINIO_ENDPOINT,
-            access_key=settings.MINIO_ACCESS_KEY,
-            secret_key=settings.MINIO_SECRET_KEY,
-            secure=False
-        )
-        if not minio_client.bucket_exists(settings.MINIO_BUCKET):
-            minio_client.make_bucket(settings.MINIO_BUCKET)
-            logger.info(f"Created MinIO bucket: {settings.MINIO_BUCKET}")
-        else:
-            logger.info(f"MinIO bucket exists: {settings.MINIO_BUCKET}")
+        logger.info("📦 Ensuring MinIO bucket exists...")
+        ensure_buckets()
+        logger.info("✅ MinIO bucket initialization complete")
     except Exception as e:
-        logger.warning(f"MinIO initialization warning: {e}")
+        logger.error(f"⚠️  MinIO initialization failed: {e}")
+        logger.error("Resume uploads may fail. Check MinIO configuration and connectivity.")
     
-    logger.info("Startup complete")
+    logger.info("✅ Startup complete - AI Resume Agent is ready")
+    logger.info("="*70)
 
 @app.on_event("shutdown")
 async def shutdown():
     """Clean up on shutdown."""
-    logger.info("Shutting down AI Resume Agent...")
+    logger.info("🛑 Shutting down AI Resume Agent...")
+

@@ -1,10 +1,25 @@
+"""Payment processing endpoints with Stripe integration.
+
+Dev mode: If STRIPE_API_KEY is not configured, payment endpoints return 501 (Not Implemented)
+with a helpful message directing developers to set up Stripe credentials.
+"""
+
 from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
 import stripe
+import logging
 from ..core.config import settings
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
-stripe.api_key = settings.STRIPE_API_KEY
+
+# Validate Stripe API key on startup
+if settings.STRIPE_API_KEY:
+    stripe.api_key = settings.STRIPE_API_KEY
+    logger.info("✅ Stripe API key configured")
+else:
+    logger.warning("⚠️  Stripe API key not configured - payment features disabled")
 
 class CreateCheckoutSessionRequest(BaseModel):
     plan_type: str  # "basic", "pro", "enterprise"
@@ -56,7 +71,16 @@ STRIPE_PLANS = {
 
 @router.post("/create-checkout-session", response_model=CreateCheckoutSessionResponse)
 async def create_checkout_session(request: CreateCheckoutSessionRequest):
-    """Create a Stripe checkout session for subscription"""
+    """Create a Stripe checkout session for subscription.
+    
+    Dev mode: Returns 501 if STRIPE_API_KEY is not configured.
+    """
+    if not settings.STRIPE_API_KEY:
+        raise HTTPException(
+            status_code=501,
+            detail="Stripe is not configured. Set STRIPE_API_KEY in .env to enable payments."
+        )
+    
     try:
         if request.plan_type not in STRIPE_PLANS:
             raise HTTPException(status_code=400, detail="Invalid plan type")
@@ -93,6 +117,7 @@ async def create_checkout_session(request: CreateCheckoutSessionRequest):
             "session_url": session.url
         }
     except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
 class RetrieveSessionRequest(BaseModel):
@@ -100,7 +125,16 @@ class RetrieveSessionRequest(BaseModel):
 
 @router.post("/retrieve-session")
 async def retrieve_session(request: RetrieveSessionRequest):
-    """Retrieve checkout session details"""
+    """Retrieve checkout session details.
+    
+    Dev mode: Returns 501 if STRIPE_API_KEY is not configured.
+    """
+    if not settings.STRIPE_API_KEY:
+        raise HTTPException(
+            status_code=501,
+            detail="Stripe is not configured. Set STRIPE_API_KEY in .env to enable payments."
+        )
+    
     try:
         session = stripe.checkout.Session.retrieve(request.session_id)
         return {
@@ -110,6 +144,7 @@ async def retrieve_session(request: RetrieveSessionRequest):
             "subscription_id": session.subscription,
         }
     except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
 
 class ManageSubscriptionRequest(BaseModel):
@@ -119,7 +154,16 @@ class ManageSubscriptionRequest(BaseModel):
 
 @router.post("/manage-subscription")
 async def manage_subscription(request: ManageSubscriptionRequest):
-    """Manage user subscription (cancel or upgrade/downgrade plan)"""
+    """Manage user subscription (cancel or upgrade/downgrade plan).
+    
+    Dev mode: Returns 501 if STRIPE_API_KEY is not configured.
+    """
+    if not settings.STRIPE_API_KEY:
+        raise HTTPException(
+            status_code=501,
+            detail="Stripe is not configured. Set STRIPE_API_KEY in .env to enable payments."
+        )
+    
     try:
         if request.action == "cancel":
             stripe.Subscription.delete(request.subscription_id)

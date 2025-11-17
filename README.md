@@ -101,44 +101,244 @@ AI_POWERED_RESUME_GENERATOR/
 
 ## 🛠️ Technical Challenges Solved
 
-### 1. **Async SQLAlchemy + Alembic**
-- Configured SQLAlchemy for async operations with asyncpg
-- Auto-run Alembic migrations on container startup
-- Proper session management in async context
+This section highlights the engineering decisions and solutions implemented to build a production-grade SaaS platform.
+
+### 1. **Async SQLAlchemy + Alembic Database Management**
+**Challenge:** Traditional SQLAlchemy is synchronous; FastAPI is async-first. Mixing them causes blocking.
+
+**Solution:**
+- SQLAlchemy 2.0 async mode with `asyncpg` driver for non-blocking database calls
+- Async context managers for session management
+- Alembic auto-migrations running on container startup (prevents "table not found" errors)
+- Proper connection pooling for concurrent requests
+
+**Code Example:**
+```python
+# async/await throughout
+async def get_user(user_id: int):
+    async with AsyncSession() as session:
+        user = await session.get(User, user_id)
+        return user
+```
+
+---
 
 ### 2. **MinIO S3-Compatible Storage**
-- MinIO bucket auto-creation on app startup
-- Async file upload/download handlers
-- Resume storage with expiring pre-signed URLs
+**Challenge:** AWS S3 is expensive; local file storage doesn't scale; need S3 API compatibility for easy cloud migration.
 
-### 3. **OAuth2 + JWT Multi-Provider Auth**
-- Google & GitHub OAuth flows
-- Token refresh mechanism with automatic re-authentication
-- Secure credential storage without storing passwords
+**Solution:**
+- MinIO server deployed alongside backend with Docker Compose
+- Bucket auto-creation on app startup (prevents "bucket not found" errors)
+- Async file upload/download with pre-signed URLs
+- Drop-in replacement for S3 (same API, easy migration)
 
-### 4. **Real-time OpenAI Integration**
-- Streaming responses for interview feedback
-- Prompt engineering for resume analysis
-- Token usage tracking for billing
+**Code Example:**
+```python
+# MinIO auto-initialization
+@app.on_event("startup")
+async def startup():
+    ensure_buckets()  # Create if missing
+```
+
+---
+
+### 3. **OAuth2 + JWT Multi-Provider Authentication**
+**Challenge:** Multiple OAuth providers (Google, GitHub) with secure token management and auto-refresh.
+
+**Solution:**
+- Separate OAuth flow for each provider with proper PKCE
+- JWT tokens with automatic refresh mechanism
+- Secure storage of refresh tokens in httponly cookies
+- Provider-agnostic authentication layer
+
+**Supported Providers:**
+- Google OAuth (email + profile)
+- GitHub OAuth (username + profile picture)
+- Future: LinkedIn, Microsoft
+
+---
+
+### 4. **Real-time OpenAI Integration with Streaming**
+**Challenge:** API calls to OpenAI can be slow; need real-time feedback for interview simulations.
+
+**Solution:**
+- Streaming responses using FastAPI `StreamingResponse`
+- Prompt engineering for resume analysis (context-aware templates)
+- Token usage tracking for cost monitoring
+- Rate-limiting and error recovery
+
+**Features:**
+- Resume optimization suggestions (real-time feedback)
+- Mock interview questions (AI-generated dynamically)
+- Interview feedback (voice + text)
+- Rate-limit handling with exponential backoff
+
+---
 
 ### 5. **Stripe Subscription Billing**
-- Full payment flow with webhooks
-- Plan tier management (Basic/Pro/Enterprise)
-- Subscription upgrade/downgrade/cancel
+**Challenge:** Complex payment flows with different plan tiers, upgrades, cancellations, and webhook security.
+
+**Solution:**
+- Full Stripe integration with Checkout Sessions
+- Subscription tier management (Basic/Pro/Enterprise)
+- Upgrade/downgrade/cancel flows with proration
 - Webhook signature verification for security
+- Dev-mode graceful degradation (payments optional in dev)
+
+**Supported Operations:**
+- One-time checkout
+- Subscription creation with retry logic
+- Plan upgrades/downgrades with automatic billing adjustment
+- Cancellation with grace period
+- Webhook handling for payment events
+
+---
 
 ### 6. **Docker Multi-Service Orchestration**
-- Service health checks with proper startup ordering
-- Auto-migration & bucket creation on backend startup
-- Celery worker for async tasks
-- Volume management for persistent data
+**Challenge:** 6 services (PostgreSQL, Redis, MinIO, Backend, Celery, Frontend) with dependencies, migrations, and health monitoring.
+
+**Solution:**
+- Docker Compose v3.8+ with service health checks
+- Proper startup ordering using `depends_on: condition: service_healthy`
+- Auto-migration script that waits for DB readiness
+- Named volumes for persistent data
+- Custom bridge network for service isolation
+
+**Services Managed:**
+- PostgreSQL (database)
+- Redis (cache + Celery broker)
+- MinIO (S3-compatible storage)
+- FastAPI backend (uvicorn)
+- Celery worker (async tasks)
+- React frontend (Vite dev server)
+
+**Smart Startup:**
+1. Database waits for pg_isready
+2. Redis pings itself
+3. MinIO checks health endpoint
+4. Backend waits for all 3, runs migrations, creates bucket
+5. Celery waits for backend ready
+6. Frontend can access all APIs
+
+---
+
+### 7. **Configuration Management with Pydantic**
+**Challenge:** Environment variables without validation cause cryptic runtime errors in production.
+
+**Solution:**
+- Pydantic BaseSettings with required field validation
+- Custom validators for DATABASE_URL, MINIO_ENDPOINT
+- Helpful error messages listing all required variables
+- Dev/prod environment detection
+
+**Error Output (Missing Env Var):**
+```
+===== CONFIGURATION ERROR =====
+DATABASE_URL is required
+REQUIRED variables (must be set in .env):
+  • DATABASE_URL       - PostgreSQL connection string
+  • MINIO_ENDPOINT     - MinIO server address
+...
+Quick fix:
+  1. Copy .env.example to .env
+  2. Fill in required values
+  3. Restart the application
+```
+
+---
+
+### 8. **CORS + Vite Proxy Development**
+**Challenge:** Frontend on port 3000, backend on 8000 = CORS errors in dev and prod.
+
+**Solution:**
+- Vite proxy for dev mode (`/api` → `http://localhost:8000`)
+- CORS middleware for production (environment-aware origin handling)
+- Axios interceptor for token attachment
+- Automatic frontend URL detection from environment
+
+**Development:**
+```typescript
+// vite.config.ts
+proxy: {
+  '/api': 'http://localhost:8000'
+}
+```
+
+**Production:**
+```python
+# Restrict to frontend domain only
+cors_origins = [settings.FRONTEND_URL]
+```
+
+---
+
+### 9. **Health Checks & Readiness Probes**
+**Challenge:** Containers start but services aren't ready; backend crashes trying to reach database.
+
+**Solution:**
+- `/health` endpoint for liveness probes
+- `/health/ready` endpoint with database + MinIO checks
+- `/health/detailed` for debugging
+- Kubernetes-compatible health check format
+
+**Endpoints:**
+- `GET /health` - Simple "is alive" check
+- `GET /health/ready` - Can handle requests? (DB + MinIO)
+- `GET /health/detailed` - Full service status report
+
+---
+
+### 10. **Celery + Redis Async Task Queue**
+**Challenge:** Long-running operations (resume analysis, email) block request handlers.
+
+**Solution:**
+- Celery worker pool with Redis broker
+- Async task decoration for resume analysis
+- Task result caching in Redis
+- Retry logic with exponential backoff
+
+**Tasks Managed:**
+- Resume PDF generation (async)
+- Email notifications (async)
+- OpenAI batch requests
+- Stripe webhook processing
+
+---
+
+## 🎓 What This Demonstrates (For Recruiters)
+
+This project showcases:
+
+✅ **Full-Stack Competency**
+- Frontend (React, TypeScript, Vite)
+- Backend (FastAPI, async Python, Pydantic)
+- DevOps (Docker, docker-compose, health checks)
+- Database (PostgreSQL, Alembic migrations)
+
+✅ **Production-Grade Architecture**
+- Scalable async patterns
+- Proper error handling and validation
+- Configuration management best practices
+- Health checks and observability
+
+✅ **Real-World Integrations**
+- OAuth2 (Google, GitHub)
+- OpenAI API (streaming, prompt engineering)
+- Stripe billing (webhooks, subscriptions)
+- S3-compatible storage (MinIO)
+
+✅ **Software Engineering Practices**
+- Clean code structure and separation of concerns
+- Comprehensive error handling
+- Documentation (README, docstrings, API docs)
+- Deployment guides for multiple platforms
 
 ---
 
 ## 📖 Documentation
 
 - **[QUICKSTART.md](docs/QUICKSTART.md)** - Get running in 3 steps
-- **[DEPLOYMENT.md](deploy/DEPLOYMENT.md)** - Deploy to Render, Vercel, AWS
+- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Deploy to Render, Vercel, AWS
 - **[API Docs](http://localhost:8000/docs)** - Swagger interactive API
 - **[Architecture](docs/ARCHITECTURE.md)** - System design details
 
@@ -187,9 +387,9 @@ docker compose logs -f frontend
 ## 🚢 Deployment
 
 ### Quick Deploy Links
-- **Render** (Backend): See [DEPLOYMENT.md](deploy/DEPLOYMENT.md#deploy-backend-to-render)
-- **Vercel** (Frontend): See [DEPLOYMENT.md](deploy/DEPLOYMENT.md#deploy-frontend-to-vercel)
-- **AWS** (Full Stack): See [DEPLOYMENT.md](deploy/DEPLOYMENT.md#deploy-to-aws)
+- **Render** (Backend): See [DEPLOYMENT.md](docs/DEPLOYMENT.md#render-backend--database)
+- **Vercel** (Frontend): See [DEPLOYMENT.md](docs/DEPLOYMENT.md#vercel-frontend)
+- **AWS** (Full Stack): See [DEPLOYMENT.md](docs/DEPLOYMENT.md#aws-alternative)
 
 ### Production Checklist
 - [ ] Set strong `SECRET_KEY` in production
