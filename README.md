@@ -15,7 +15,7 @@ cp .env.example .env
 
 ```powershell
 docker-compose up --build
-```
+``` 
 
 3. Backend API will be at `http://localhost:8000` and frontend at `http://localhost:3000`.
 
