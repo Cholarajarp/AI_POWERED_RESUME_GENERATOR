@@ -8,7 +8,7 @@ A production-ready SaaS platform to help users optimize resumes for ATS, analyze
 - Database: PostgreSQL
 - Cache/Queue: Redis + Celery
 - Storage: MinIO (S3-compatible)
-- Auth: JWT + OAuth2 (Google/GitHub)
+- Auth: JWT + OAuth2 (Google/GitHub) 
 - Payments: Stripe
 - CI/CD: GitHub Actions
 - Deployment: Docker + docker-compose
