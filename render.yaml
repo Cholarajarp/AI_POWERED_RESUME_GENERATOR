@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: resume-agent-backend
+    runtime: python
+    pythonVersion: 3.11
+    rootDir: backend
+    startCommand: bash -c "chmod +x ./scripts/start.sh && ./scripts/start.sh"
+    buildCommand: pip install -r requirements.txt
+    
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: resume-agent-db
+          property: connectionString
+      - key: MINIO_ENDPOINT
+        value: minio:9000
+      - key: MINIO_ACCESS_KEY
+        value: minioadmin
+      - key: MINIO_SECRET_KEY
+        value: minioadmin
+      - key: REDIS_URL
+        value: redis://redis:6379
+      - key: STRIPE_API_KEY
+        value: ${STRIPE_API_KEY}
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        value: ${GOOGLE_CLIENT_ID}
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        value: ${GOOGLE_CLIENT_SECRET}
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        value: ${GITHUB_CLIENT_ID}
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        value: ${GITHUB_CLIENT_SECRET}
+        sync: false
+
+  - type: pserv
+    name: resume-agent-db
+    ipAllowList: []
+    plan: free
+    postgresVersion: 15
+    primaryRegion: oregon
+    region: oregon
