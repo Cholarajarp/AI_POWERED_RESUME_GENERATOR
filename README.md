@@ -15,24 +15,24 @@ A production-ready SaaS platform to help users optimize resumes for ATS, analyze
 
 ---
 
-## 🎯 Key Features
+## Key Features
 
 ### Core Features
-- ✅ **Resume Optimization**: AI-powered ATS keyword matching & formatting
-- ✅ **Job Analysis**: Parse job descriptions and match with resume
-- ✅ **Mock Interviews**: AI interviewer with voice feedback
-- ✅ **Template System**: Cover letters, LinkedIn profiles, ATS templates
-- ✅ **PDF Export**: Premium resume templates with custom styling
+- **Resume Optimization**: AI-powered ATS keyword matching & formatting
+- **Job Analysis**: Parse job descriptions and match with resume
+- **Mock Interviews**: AI interviewer with voice feedback
+- **Template System**: Cover letters, LinkedIn profiles, ATS templates
+- **PDF Export**: Premium resume templates with custom styling
 
 ### Advanced Features
-- ✅ **OAuth Login**: Google & GitHub authentication
-- ✅ **Subscription Plans**: Stripe billing with 3 tiers (Basic/Pro/Enterprise)
-- ✅ **Admin Dashboard**: Real-time analytics & user management
-- ✅ **Celery Tasks**: Async resume processing and email notifications
+- **OAuth Login**: Google & GitHub authentication
+- **Subscription Plans**: Stripe billing with 3 tiers (Basic/Pro/Enterprise)
+- **Admin Dashboard**: Real-time analytics & user management
+- **Celery Tasks**: Async resume processing and email notifications
 
 ---
 
-## 🚀 Quick Start (Development)
+## Quick Start (Development)
 
 ### Prerequisites
 - **Docker Desktop** (Windows/Mac) or Docker Engine (Linux) with Docker Compose
@@ -54,15 +54,15 @@ docker compose up --build -d
 ```
 
 3. **Access the app**:
-- 🌐 Frontend: http://localhost:3000
-- 📡 API: http://localhost:8000/docs
-- 📦 MinIO: http://localhost:9001
+- Frontend: http://localhost:3000
+- API: http://localhost:8000/docs
+- MinIO: http://localhost:9001
 
 **Full guide**: See [QUICKSTART.md](docs/QUICKSTART.md)
 
 ---
 
-## 📋 Project Structure
+##  Project Structure
 
 ```
 AI_POWERED_RESUME_GENERATOR/
@@ -99,7 +99,7 @@ AI_POWERED_RESUME_GENERATOR/
 
 ---
 
-## 🛠️ Technical Challenges Solved
+## Technical Challenges Solved
 
 This section highlights the engineering decisions and solutions implemented to build a production-grade SaaS platform.
 
@@ -305,7 +305,7 @@ cors_origins = [settings.FRONTEND_URL]
 
 ---
 
-## 📖 Documentation
+## Documentation
 
 - **[QUICKSTARTg .md](docs/QUICKSTART.md)** - Get running in 3 steps
 - **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Deploy to Render, Vercel, AWS
@@ -314,7 +314,7 @@ cors_origins = [settings.FRONTEND_URL]
 
 ---
 
-## 🔐 Environment Variables
+## Environment Variables
 
 Required (copy from `.env.example`):
 ```env
@@ -335,7 +335,7 @@ GOOGLE_OAUTH_CLIENT_SECRET=...
 
 ---
 
-## 🧪 Testing & Validation
+## Testing & Validation
 
 ```bash
 # Run backend tests
@@ -354,7 +354,7 @@ docker compose logs -f frontend
 
 ---
 
-## 🚢 Deployment
+## Deployment
 
 ### Quick Deploy Links
 - **Render** (Backend): See [DEPLOYMENT.md](docs/DEPLOYMENT.md#render-backend--database)
@@ -373,7 +373,7 @@ docker compose logs -f frontend
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 1. Create a feature branch: `git checkout -b feature/my-feature`
 2. Commit changes: `git commit -m "feat: add feature"`
@@ -381,21 +381,21 @@ docker compose logs -f frontend
 
 ---
 
-## 📄 License
+## License
 
 MIT License - See [LICENSE](LICENSE) file
 
 ---
 
-## 📬 Support & Contact
+## Support & Contact
 
-- 📧 Email: contact@airesume.dev
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/ai-resume-agent/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/yourusername/ai-resume-agent/discussions)
+- Email: contact@airesume.dev
+- Issues: [GitHub Issues](https://github.com/yourusername/ai-resume-agent/issues)
+- Discussions: [GitHub Discussions](https://github.com/yourusername/ai-resume-agent/discussions)
 
 ---
 
-**Built with ❤️ for job seekers everywhere.**
+**Built with for job seekers everywhere.**
 
 3. Access services:
 - **Backend API**: http://localhost:8000
