@@ -6,6 +6,7 @@ services:
     rootDir: backend
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000
     buildCommand: pip install -r requirements.txt
+    preDeployCommand: alembic upgrade head || true
     
     envVars:
       - key: DATABASE_URL
@@ -15,23 +16,23 @@ services:
       - key: PYTHONUNBUFFERED
         value: "1"
       - key: MINIO_ENDPOINT
-        value: ${MINIO_ENDPOINT}
+        value: ""
       - key: MINIO_ACCESS_KEY
-        value: ${MINIO_ACCESS_KEY}
+        value: ""
       - key: MINIO_SECRET_KEY
-        value: ${MINIO_SECRET_KEY}
+        value: ""
       - key: REDIS_URL
-        value: ${REDIS_URL}
+        value: ""
       - key: STRIPE_API_KEY
-        value: ${STRIPE_API_KEY}
+        value: ""
       - key: GOOGLE_CLIENT_ID
-        value: ${GOOGLE_CLIENT_ID}
+        value: ""
       - key: GOOGLE_CLIENT_SECRET
-        value: ${GOOGLE_CLIENT_SECRET}
+        value: ""
       - key: GITHUB_CLIENT_ID
-        value: ${GITHUB_CLIENT_ID}
+        value: ""
       - key: GITHUB_CLIENT_SECRET
-        value: ${GITHUB_CLIENT_SECRET}
+        value: ""
 
   - type: pserv
     name: resume-agent-db
