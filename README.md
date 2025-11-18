@@ -94,7 +94,7 @@ AI_POWERED_RESUME_GENERATOR/
 ├── scripts/
 │   ├── start-dev.ps1         # Windows startup script
 │   └── health-check.sh       # System diagnostics
-└── docker-compose.yml        # Multi-service orchestration
+└── docker-compose.yml        #  Multi-service orchestration
 ```
 
 ---
