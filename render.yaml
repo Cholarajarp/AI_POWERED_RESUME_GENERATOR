@@ -4,7 +4,7 @@ services:
     runtime: python
     pythonVersion: 3.11
     rootDir: backend
-    startCommand: bash -c "chmod +x ./scripts/start.sh && ./scripts/start.sh"
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000
     buildCommand: pip install -r requirements.txt
     
     envVars:
@@ -12,29 +12,26 @@ services:
         fromDatabase:
           name: resume-agent-db
           property: connectionString
+      - key: PYTHONUNBUFFERED
+        value: "1"
       - key: MINIO_ENDPOINT
-        value: minio:9000
+        value: ${MINIO_ENDPOINT}
       - key: MINIO_ACCESS_KEY
-        value: minioadmin
+        value: ${MINIO_ACCESS_KEY}
       - key: MINIO_SECRET_KEY
-        value: minioadmin
+        value: ${MINIO_SECRET_KEY}
       - key: REDIS_URL
-        value: redis://redis:6379
+        value: ${REDIS_URL}
       - key: STRIPE_API_KEY
         value: ${STRIPE_API_KEY}
-        sync: false
       - key: GOOGLE_CLIENT_ID
         value: ${GOOGLE_CLIENT_ID}
-        sync: false
       - key: GOOGLE_CLIENT_SECRET
         value: ${GOOGLE_CLIENT_SECRET}
-        sync: false
       - key: GITHUB_CLIENT_ID
         value: ${GITHUB_CLIENT_ID}
-        sync: false
       - key: GITHUB_CLIENT_SECRET
         value: ${GITHUB_CLIENT_SECRET}
-        sync: false
 
   - type: pserv
     name: resume-agent-db
