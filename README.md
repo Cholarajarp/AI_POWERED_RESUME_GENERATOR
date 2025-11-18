@@ -305,39 +305,9 @@ cors_origins = [settings.FRONTEND_URL]
 
 ---
 
-## 🎓 What This Demonstrates (For Recruiters)
-
-This project showcases:
-
-✅ **Full-Stack Competency**
-- Frontend (React, TypeScript, Vite)
-- Backend (FastAPI, async Python, Pydantic)
-- DevOps (Docker, docker-compose, health checks)
-- Database (PostgreSQL, Alembic migrations)
-
-✅ **Production-Grade Architecture**
-- Scalable async patterns
-- Proper error handling and validation
-- Configuration management best practices
-- Health checks and observability
-
-✅ **Real-World Integrations**
-- OAuth2 (Google, GitHub)
-- OpenAI API (streaming, prompt engineering)
-- Stripe billing (webhooks, subscriptions)
-- S3-compatible storage (MinIO)
-
-✅ **Software Engineering Practices**
-- Clean code structure and separation of concerns
-- Comprehensive error handling
-- Documentation (README, docstrings, API docs)
-- Deployment guides for multiple platforms
-
----
-
 ## 📖 Documentation
 
-- **[QUICKSTART.md](docs/QUICKSTART.md)** - Get running in 3 steps
+- **[QUICKSTARTg .md](docs/QUICKSTART.md)** - Get running in 3 steps
 - **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Deploy to Render, Vercel, AWS
 - **[API Docs](http://localhost:8000/docs)** - Swagger interactive API
 - **[Architecture](docs/ARCHITECTURE.md)** - System design details
